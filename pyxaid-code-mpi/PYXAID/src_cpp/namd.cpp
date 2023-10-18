@@ -339,14 +339,9 @@ void propagate_electronic(InputStructure& is,vector<ElectronicStructure>& es,int
       es[i].t_m[0] += is.elec_dt; 
 
       // Update hopping probabilities
-      if(is.liouville==1){
-        es[i].update_hop_prob_liouville(is.elec_dt,is.boltz_flag,is.Temp,Ef,Eex,rates);
-      }
-      else{
-        if(is.sh_algo==0){ es[i].update_hop_prob_fssh(is.elec_dt,is.boltz_flag,is.Temp,Ef,Eex,rates);  }
-        else if(is.sh_algo==1){  es[i].update_hop_prob_gfsh(is.elec_dt,is.boltz_flag,is.Temp,Ef,Eex,rates);  }
-        else if(is.sh_algo==2){  es[i].update_hop_prob_mssh(is.elec_dt,is.boltz_flag,is.Temp,Ef,Eex,rates);  }
-      }
+      if(is.sh_algo==0){ es[i].update_hop_prob_fssh(is.elec_dt,is.boltz_flag,is.Temp,Ef,Eex,rates);  }
+      else if(is.sh_algo==1){  es[i].update_hop_prob_gfsh(is.elec_dt,is.boltz_flag,is.Temp,Ef,Eex,rates);  }
+      else if(is.sh_algo==2){  es[i].update_hop_prob_mssh(is.elec_dt,is.boltz_flag,is.Temp,Ef,Eex,rates);  }
 
 
     }// for j
@@ -365,14 +360,10 @@ void propagate_electronic(InputStructure& is,vector<ElectronicStructure>& es,int
       es[i].propagate_coefficients1(is.elec_dt,opt,Ef);
 
       // Update hopping probabilities
-      if(is.liouville==1){
-        es[i].update_hop_prob_liouville(is.elec_dt,is.boltz_flag,is.Temp,Ef,Eex,rates);
-      }
-      else{
-        if(is.sh_algo==0){ es[i].update_hop_prob_fssh(is.elec_dt,is.boltz_flag,is.Temp,Ef,Eex,rates);  }
-        else if(is.sh_algo==1){  es[i].update_hop_prob_gfsh(is.elec_dt,is.boltz_flag,is.Temp,Ef,Eex,rates);  }
-        else if(is.sh_algo==2){  es[i].update_hop_prob_mssh(is.elec_dt,is.boltz_flag,is.Temp,Ef,Eex,rates);  }
-      }                  
+      if(is.sh_algo==0){ es[i].update_hop_prob_fssh(is.elec_dt,is.boltz_flag,is.Temp,Ef,Eex,rates);  }
+      else if(is.sh_algo==1){  es[i].update_hop_prob_gfsh(is.elec_dt,is.boltz_flag,is.Temp,Ef,Eex,rates);  }
+      else if(is.sh_algo==2){  es[i].update_hop_prob_mssh(is.elec_dt,is.boltz_flag,is.Temp,Ef,Eex,rates);  }
+                         
     }
   }
   else if(is.integrator==11){
@@ -387,14 +378,10 @@ void propagate_electronic(InputStructure& is,vector<ElectronicStructure>& es,int
       es[i].propagate_coefficients1(is.elec_dt,opt,Ef);
 
       // Update hopping probabilities 
-      if(is.liouville==1){
-        es[i].update_hop_prob_liouville(is.elec_dt,is.boltz_flag,is.Temp,Ef,Eex,rates);
-      }
-      else{
-        if(is.sh_algo==0){ es[i].update_hop_prob_fssh(is.elec_dt,is.boltz_flag,is.Temp,Ef,Eex,rates);  }
-        else if(is.sh_algo==1){  es[i].update_hop_prob_gfsh(is.elec_dt,is.boltz_flag,is.Temp,Ef,Eex,rates);  }
-        else if(is.sh_algo==2){  es[i].update_hop_prob_mssh(is.elec_dt,is.boltz_flag,is.Temp,Ef,Eex,rates);  }
-      }
+      if(is.sh_algo==0){ es[i].update_hop_prob_fssh(is.elec_dt,is.boltz_flag,is.Temp,Ef,Eex,rates);  }
+      else if(is.sh_algo==1){  es[i].update_hop_prob_gfsh(is.elec_dt,is.boltz_flag,is.Temp,Ef,Eex,rates);  }
+      else if(is.sh_algo==2){  es[i].update_hop_prob_mssh(is.elec_dt,is.boltz_flag,is.Temp,Ef,Eex,rates);  }
+
     }
   }
   else if(is.integrator==2){
@@ -404,14 +391,10 @@ void propagate_electronic(InputStructure& is,vector<ElectronicStructure>& es,int
       es[i].propagate_coefficients2(is.elec_dt,Ef);
 
       // Update hopping probabilities
-      if(is.liouville==1){
-        es[i].update_hop_prob_liouville(is.elec_dt,is.boltz_flag,is.Temp,Ef,Eex,rates);
-      }
-      else{
-        if(is.sh_algo==0){ es[i].update_hop_prob_fssh(is.elec_dt,is.boltz_flag,is.Temp,Ef,Eex,rates);  }
-        else if(is.sh_algo==1){  es[i].update_hop_prob_gfsh(is.elec_dt,is.boltz_flag,is.Temp,Ef,Eex,rates);  }
-        else if(is.sh_algo==2){  es[i].update_hop_prob_mssh(is.elec_dt,is.boltz_flag,is.Temp,Ef,Eex,rates);  }
-      }
+      if(is.sh_algo==0){ es[i].update_hop_prob_fssh(is.elec_dt,is.boltz_flag,is.Temp,Ef,Eex,rates);  }
+      else if(is.sh_algo==1){  es[i].update_hop_prob_gfsh(is.elec_dt,is.boltz_flag,is.Temp,Ef,Eex,rates);  }
+      else if(is.sh_algo==2){  es[i].update_hop_prob_mssh(is.elec_dt,is.boltz_flag,is.Temp,Ef,Eex,rates);  }
+
     }//j
   }
 
@@ -973,6 +956,7 @@ void run_namd1(InputStructure& is, vector<ElectronicStructure>& me_es,vector<me_
       propagate_electronic(is,me_es,i,rates);    // update_hop_prob -is called in there 
                                                  // rates are only used if decoherence==5 or decoherence==6
                                                             
+
       // Calculate the probabilities off all states and hopping probabilities
       me_es[i].update_populations();
 
