@@ -193,7 +193,6 @@ public:
   void update_hop_prob_fssh(double dt,int is_boltz_flag,double Temp,matrix& Ef,double Ex, matrix&);
   void update_hop_prob_mssh(double dt,int is_boltz_flag,double Temp,matrix& Ef,double Ex, matrix&);
   void update_hop_prob_gfsh(double dt,int is_boltz_flag,double Temp,matrix& Ef,double Ex, matrix&);
-  void update_hop_prob_liouville(double dt,int is_boltz_flag,double Temp,matrix& Ef,double Ex, matrix&);
   void init_hop_prob1(); 
 
   void check_decoherence(double dt,int boltz_flag,double Temp,matrix& rates); // practically DISH correction

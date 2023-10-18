@@ -28,7 +28,7 @@ void InputStructure::init(){
 //  is_many_electron_algorithm =
   is_namdtime = is_sh_algo = is_num_sh_traj =
   is_boltz_flag = is_debug_flag = is_Temp =
-  is_nucl_dt = is_elec_dt = is_integrator = is_liouville =
+  is_nucl_dt = is_elec_dt = is_integrator =
   is_runtype = is_Ham_st_indx = is_Ham_ed_indx = 
   is_Ham_re_prefix = is_Ham_re_suffix = 
   is_Ham_im_prefix = is_Ham_im_suffix =
@@ -100,7 +100,6 @@ void InputStructure::echo(){
   if(is_field_freq){ cout<<"field_freq = "<<field_freq<<endl; }
   if(is_field_freq_units){ cout<<"field_freq_units = "<<field_freq_units<<endl; }
   if(is_field_fluence){ cout<<"field_fluence [mJ/cm^2] = "<<field_fluence<<endl; }
-  if(is_liouville){ cout<<"liouville = "<<is_liouville<<endl; }
 
 }
 
@@ -162,7 +161,7 @@ void InputStructure::set_default(){
   if(!is_field_freq){ warning("field_freq","2.0"); field_freq = 2.0; is_field_freq = 1; wrn_status++; }
   if(!is_field_freq_units){ warning("field_freq_units","eV"); field_freq_units = "eV"; is_field_freq_units = 1; wrn_status++; }
   if(!is_field_fluence){ warning("field_fluence","1.0"); field_fluence = 1.0; is_field_fluence = 1; wrn_status++; }
-  if(!is_liouville){warning("liouville","0"); liouville = 0; is_liouville = 1;}
+
 
 
   cout<<"Number of errors = "<<err_status<<endl;
@@ -235,7 +234,6 @@ InputStructure::InputStructure(boost::python::dict params){
     else if(s1=="field_freq"){ field_freq = extract<double>(params[s1]); is_field_freq = 1; }
     else if(s1=="field_freq_units"){ field_freq_units = extract<std::string>(params[s1]); is_field_freq_units = 1; }
     else if(s1=="field_fluence"){ field_fluence = extract<double>(params[s1]); is_field_fluence = 1; }
-    else if(s1=="liouville"){ liouville = extract<int>(params[s1]); is_liouville = 1; }
 
         // Pull in the MPI parameters
     else if(s1=="myproc"){ myproc = extract<int>(params[s1]); }
