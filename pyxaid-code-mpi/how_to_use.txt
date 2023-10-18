@@ -1,0 +1,4 @@
+export PYTHONPATH=$PYTHONPATH:/project/prezhdo_176/guoqingz/softwares/pyxaid-code-mpi/
+module load python/2.7.16
+export LD_LIBRARY_PATH=/project/prezhdo_176/guoqingz/softwares/boost_1_68_0/build/lib:$LD_LIBRARY_PATH
+export PYTHONPATH=$PYTHONPATH:/project/prezhdo_176/guoqingz/softwares/python2/packages
