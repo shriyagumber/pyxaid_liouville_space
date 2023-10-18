@@ -105,8 +105,6 @@ void ElectronicStructure::check_decoherence(double dt,int boltz_flag,double Temp
 
 }
 
-
-
 void ElectronicStructure::update_hop_prob(double dt,int boltz_flag, double Temp,matrix& Ef){
 /*******************************************************
  (Re-)Calculate hopping probabilities from given state 
@@ -218,7 +216,52 @@ void ElectronicStructure::update_hop_prob_fssh(double dt,int boltz_flag, double 
   delete Heff;
 }
 
+void ElectronicStructure::update_hop_prob_liouville(double dt,int boltz_flag, double Temp,matrix& Ef,double Eex, matrix& rates){
+/*******************************************************
+ Here we actually sum up all the transition probabilities
+*******************************************************/
+  update_populations();
 
+  // Compute effective Hamiltonian
+  matrix* Heff; Heff = new matrix(num_states,num_states);
+  *Heff = *Hcurr + ( Ef.M[0] * (*Hprimex) + Ef.M[1] * (*Hprimey) + Ef.M[2] * (*Hprimez));
+
+  for(int i=0;i<num_states;i++){
+    double a_ii = A->M[i*num_states+i].real();
+    if (a_ii==0.0){ a_ii = 1e-12; }
+
+    double sum = 0.0;
+    for(int j=0;j<num_states;j++){
+      if(j!=i){
+        // In general the expression is:
+        // Pij = (2*dt/(hbar*|c_i|^2) ) * summ_j ( Im(Hij * c_j^* * c_j)  )
+        // where Hij is for TD-SE: i*hbar*dc/dt = H * c
+        // Hcurr at this moments is -i*hbar*<i|d/dt|j>
+        // Hprime* at this moment is -i*hbar*<i|p|j>, Ef will include: 2*e/m_e * A(t) * cos(omega*t)
+
+        g[i*num_states+j] = (2.0*dt/(a_ii*hbar))*(A->M[i*num_states+j] * Heff->M[i*num_states+j]).imag(); // g_ij = P(i->j)
+
+        if(g[i*num_states+j]<0.0){ g[i*num_states+j] = 0.0; }
+
+       //------------------- Boltzmann factor -------------------
+       double E_i = Heff->M[i*num_states+i].real();
+       double E_j = Heff->M[j*num_states+j].real();
+       double dE = (E_j - E_i);
+       double bf = 1.0;
+       if(dE>Eex){  bf= exp(-((dE-Eex)/(kb*Temp))); }  // hop to higher energy state is difficult - thermal equilibrium
+                                                       // no such scaling for Hij_field - it is non-equilibrium process
+
+       //------------------- Together ---------------------------      
+        g[i*num_states+j] *= bf;
+
+        sum += g[i*num_states+j];
+      }// j!=i
+    }// for j
+    g[i*num_states+i] -= sum;
+  }// for i
+
+  delete Heff;
+}
 
 void ElectronicStructure::update_hop_prob_mssh(double dt,int boltz_flag, double Temp,matrix& Ef,double Eex, matrix& rates){
 /*******************************************************
