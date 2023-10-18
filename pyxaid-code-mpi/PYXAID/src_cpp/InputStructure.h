@@ -52,11 +52,14 @@ public:
 
   std::string read_couplings; int is_read_couplings;
   std::string read_overlaps;  int is_read_overlaps;
+
 //  int many_electron_algorithm;  int is_many_electron_algorithm;
   int integrator;   int is_integrator;     // choose integration algorithm
   double nucl_dt;   int is_nucl_dt;        // nuclear time step in fs
   double elec_dt;   int is_elec_dt;        // electronic time step in fs
   int namdtime;     int is_namdtime;
+  int liouville;    int is_liouville;
+
 // control the file index for repeating
   int Ham_st_indx;  int is_Ham_st_indx;    // starting index
   int Ham_ed_indx;  int is_Ham_ed_indx;    // ending index
@@ -69,7 +72,7 @@ public:
   int alp_bet;      int is_alp_bet;        // coupling between alpha and beta chanels, 1 - yes, 0 - no
   int decoherence;  int is_decoherence;    // choose the decoherence method to use; 0 - no decoherence
   int regress_mode; int is_regress_mode;   // regression mode used during dephasing times calculations
-
+  
   // Electromagnetic field
   int is_field;             int is_is_field;       // flag to include explicit field
   std::string field_dir;    int is_field_dir;      // direction of the field
