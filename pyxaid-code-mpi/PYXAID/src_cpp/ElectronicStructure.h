@@ -43,7 +43,8 @@ public:
   matrix* Ccurr;
   matrix* Cprev;
   matrix* Cnext;
-  matrix* A;                      // density matrix - populations and coherences
+  matrix* A;                            // density matrix - populations and coherences
+  matrix* P;                            // liouville population matrix
 
   // Hamiltonian: meaning of "current" and "next" depends on the algorithm to solve TD-SE
   matrix* Hcurr; // current Hamiltonian                             Hij = H[i*num_states+j]
@@ -60,8 +61,6 @@ public:
   // DISH variables:
   vector<double> tau_m; // times since last decoherence even for all PES (actually rates, that is inverse times)
   vector<double> t_m;   // time counters for each PES
-  
-
 
   //========== Methods ================
   // Constructors
@@ -70,6 +69,7 @@ public:
 
     complex<double> tmp(0.0,0.0);
     vector<double> tmp1(n,0.0);
+
     Ccurr = new matrix(n,1); *Ccurr = tmp;
     Cprev = new matrix(n,1); *Cprev = tmp;
     Cnext = new matrix(n,1); *Cnext = tmp;
@@ -77,6 +77,7 @@ public:
     g = std::vector<double>(n*n,0.0);  // g[i*n+j] ~=g[i][j] - probability of i->j transition
 
     A = new matrix(n,n); *A = tmp;
+    P = new matrix(n,n); *P = tmp;
 
     Hcurr = new matrix(n,n); *Hcurr = tmp;
     Hprev = new matrix(n,n); *Hprev = tmp;
@@ -86,7 +87,6 @@ public:
     Hprimex = new matrix(n,n); *Hprimex = tmp;
     Hprimey = new matrix(n,n); *Hprimey = tmp;
     Hprimez = new matrix(n,n); *Hprimez = tmp;
-
 
     tau_m = std::vector<double>(n,0.0);
     t_m = std::vector<double>(n,0.0);
@@ -106,6 +106,7 @@ public:
     g = std::vector<double>(n*n,0.0);  // g[i*n+j] ~=g[i][j] - probability of i->j transition
     
     A = new matrix(n,n);
+    P = new matrix(n,n);
 
     Hcurr = new matrix(n,n);
     Hprev = new matrix(n,n);
@@ -121,7 +122,7 @@ public:
     t_m = es.t_m;
 
     *Ccurr = *es.Ccurr; *Cprev = *es.Cprev; *Cnext = *es.Cnext;
-    g = es.g;  *A = *es.A;
+    g = es.g;  *A = *es.A; *P = *es.P;
     *Hcurr = *es.Hcurr;  *Hprev = *es.Hprev;  *Hnext = *es.Hnext;  *dHdt  = *es.dHdt;
     *Hprimex = *es.Hprimex; *Hprimey = *es.Hprimey; *Hprimez = *es.Hprimez;
   }
@@ -142,6 +143,7 @@ public:
     if(Hprimez!=NULL){ delete Hprimez; }
     if(tau_m.size()>0){ tau_m.clear(); }
     if(t_m.size()>0){ t_m.clear(); }
+    if(P.size()>0){ P.clear(); }
   }
 
 
@@ -149,7 +151,7 @@ public:
     num_states = es.num_states;
     curr_state = es.curr_state;
    *Ccurr = *es.Ccurr; *Cprev = *es.Cprev; *Cnext = *es.Cnext;
-    g = es.g;  *A = *es.A;
+    g = es.g;  *A = *es.A; *P = *es.P;
     *Hcurr = *es.Hcurr;  *Hprev = *es.Hprev; *Hnext = *es.Hnext;
     *Hprimex = *es.Hprimex; *Hprimey = *es.Hprimey; *Hprimez = *es.Hprimez; 
     *dHdt  = *es.dHdt;
@@ -186,7 +188,9 @@ public:
   double energy();                // calculate the total energy
   double norm(); // calculate the norm of the wavefunction
 
-  void update_populations();      // update matrix A from Ccurr
+  void update_populations();            // update matrix A from Ccurr
+  void update_liouville_populations();  // update liouville population matrix using the density matrix A
+
   void update_hop_prob(double dt,int is_boltz_flag,double Temp,matrix& Ef);
 
 
