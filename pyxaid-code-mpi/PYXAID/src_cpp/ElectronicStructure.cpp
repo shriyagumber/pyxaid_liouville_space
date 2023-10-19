@@ -30,10 +30,10 @@ void ElectronicStructure::update_populations(){
   *A = ((*Ccurr).conj()) * ((*Ccurr).T());
 }
 
-void ElectronicStrcuture::update_liouville_populations(){
+void ElectronicStructure::update_liouville_populations(){
   for(int i=0;i<num_states;i++){
     for(int j=0;j<num_states;j++){
-      *P->M[i*num_states+j] = A->M[i*num_states+j].real() * A->M[i*num_states+j].real() + A->M[i*num_states+j].imag() * A->M[i*num_states+j].imag();
+      P[i*num_states+j] = A->M[i*num_states+j].real() * A->M[i*num_states+j].real() + A->M[i*num_states+j].imag() * A->M[i*num_states+j].imag();
     }
   }
 }

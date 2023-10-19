@@ -44,7 +44,7 @@ public:
   matrix* Cprev;
   matrix* Cnext;
   matrix* A;                            // density matrix - populations and coherences
-  matrix* P;                            // liouville population matrix
+  vector<double> P;                            // liouville population matrix
 
   // Hamiltonian: meaning of "current" and "next" depends on the algorithm to solve TD-SE
   matrix* Hcurr; // current Hamiltonian                             Hij = H[i*num_states+j]
@@ -77,7 +77,7 @@ public:
     g = std::vector<double>(n*n,0.0);  // g[i*n+j] ~=g[i][j] - probability of i->j transition
 
     A = new matrix(n,n); *A = tmp;
-    P = new matrix(n,n); *P = tmp;
+    P = std::vector<double>(n*n,0.0);
 
     Hcurr = new matrix(n,n); *Hcurr = tmp;
     Hprev = new matrix(n,n); *Hprev = tmp;
@@ -106,7 +106,7 @@ public:
     g = std::vector<double>(n*n,0.0);  // g[i*n+j] ~=g[i][j] - probability of i->j transition
     
     A = new matrix(n,n);
-    P = new matrix(n,n);
+    P = std::vector<double>(n*n,0.0);
 
     Hcurr = new matrix(n,n);
     Hprev = new matrix(n,n);
@@ -117,12 +117,11 @@ public:
     Hprimey = new matrix(n,n);
     Hprimez = new matrix(n,n);
 
-
     tau_m = es.tau_m;
     t_m = es.t_m;
 
     *Ccurr = *es.Ccurr; *Cprev = *es.Cprev; *Cnext = *es.Cnext;
-    g = es.g;  *A = *es.A; *P = *es.P;
+    g = es.g;  *A = *es.A; P = es.P;
     *Hcurr = *es.Hcurr;  *Hprev = *es.Hprev;  *Hnext = *es.Hnext;  *dHdt  = *es.dHdt;
     *Hprimex = *es.Hprimex; *Hprimey = *es.Hprimey; *Hprimez = *es.Hprimez;
   }
@@ -143,7 +142,7 @@ public:
     if(Hprimez!=NULL){ delete Hprimez; }
     if(tau_m.size()>0){ tau_m.clear(); }
     if(t_m.size()>0){ t_m.clear(); }
-    if(P!=NULL) { delete P;} // P = NULL;}
+    if(P.size()>0) {P.clear();} 
   }
 
 
@@ -151,7 +150,7 @@ public:
     num_states = es.num_states;
     curr_state = es.curr_state;
    *Ccurr = *es.Ccurr; *Cprev = *es.Cprev; *Cnext = *es.Cnext;
-    g = es.g;  *A = *es.A; *P = *es.P;
+    g = es.g;  *A = *es.A; P = es.P;
     *Hcurr = *es.Hcurr;  *Hprev = *es.Hprev; *Hnext = *es.Hnext;
     *Hprimex = *es.Hprimex; *Hprimey = *es.Hprimey; *Hprimez = *es.Hprimez; 
     *dHdt  = *es.dHdt;
