@@ -31,9 +31,20 @@ void ElectronicStructure::update_populations(){
 }
 
 void ElectronicStructure::update_liouville_populations(){
+  double sum = 0.0;
+
+  // Calculating populations in liouville space: P_ij = |A_ij|^2
   for(int i=0;i<num_states;i++){
     for(int j=0;j<num_states;j++){
       P[i*num_states+j] = A->M[i*num_states+j].real() * A->M[i*num_states+j].real() + A->M[i*num_states+j].imag() * A->M[i*num_states+j].imag();
+      sum += P[i*num_states+j];
+    }
+  }
+
+  // Normalizing the Populations
+  for(int i=0;i<num_states;i++){
+    for(int j=0;j<num_states;j++){
+      P[i*num_states+j] = P[i*num_states+j]/sum;
     }
   }
 }
