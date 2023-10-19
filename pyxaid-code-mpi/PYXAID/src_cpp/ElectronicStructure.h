@@ -143,7 +143,7 @@ public:
     if(Hprimez!=NULL){ delete Hprimez; }
     if(tau_m.size()>0){ tau_m.clear(); }
     if(t_m.size()>0){ t_m.clear(); }
-    if(P.size()>0){ P.clear(); }
+    if(P!=NULL) { delete P;} // P = NULL;}
   }
 
 
