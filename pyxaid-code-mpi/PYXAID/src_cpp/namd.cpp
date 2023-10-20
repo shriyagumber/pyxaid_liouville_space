@@ -974,12 +974,19 @@ void run_namd1(InputStructure& is, vector<ElectronicStructure>& me_es,vector<me_
                                                  // rates are only used if decoherence==5 or decoherence==6
                                                             
       // Calculate the probabilities off all states and hopping probabilities
-      me_es[i].update_populations();
+      if(is.liouville==0){
+        me_es[i].update_populations();
+      }
 
       if(is.decoherence==0){  // FSSH
 //        curr_state = me_es[i].curr_state;
-        hop(me_es[i].g,me_es[i].curr_state,nst);
-        curr_state = me_es[i].curr_state;
+        //if(is.liouville==1){
+        //  hop_liouville(me_es[i].g_liouville,me_es[i].curr_state,nst)
+        //}
+        //else{
+          hop(me_es[i].g,me_es[i].curr_state,nst);
+          curr_state = me_es[i].curr_state;
+        //}
       }
       else if(is.decoherence==1){  // DISH - currently any value >0
         me_es[i].check_decoherence(is.nucl_dt,is.boltz_flag,is.Temp,rates);
@@ -1023,10 +1030,6 @@ void run_namd1(InputStructure& is, vector<ElectronicStructure>& me_es,vector<me_
           cout<<endl;
         }
 */
-
-
-
-
       // Accumulate SE and SH probabilities for all states
       sh_pops[i][curr_state] += 1.0;
       for(j=0;j<nst;j++){ se_pops[i][j] += me_es[i].A->M[j*nst+j].real(); }

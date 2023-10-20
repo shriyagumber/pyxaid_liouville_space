@@ -57,6 +57,7 @@ public:
   matrix* Hprimez;
 
   vector<double> g; // num_states x num_states matrix, reshaped in 1D array
+  vector<double> g_liouville;
 
   // DISH variables:
   vector<double> tau_m; // times since last decoherence even for all PES (actually rates, that is inverse times)
@@ -75,6 +76,7 @@ public:
     Cnext = new matrix(n,1); *Cnext = tmp;
 
     g = std::vector<double>(n*n,0.0);  // g[i*n+j] ~=g[i][j] - probability of i->j transition
+    g_liouville = std::vector<double>(n*n*n*n,0.0);
 
     A = new matrix(n,n); *A = tmp;
     P = std::vector<double>(n*n,0.0);
@@ -104,7 +106,8 @@ public:
     Cnext = new matrix(n,1);
 
     g = std::vector<double>(n*n,0.0);  // g[i*n+j] ~=g[i][j] - probability of i->j transition
-    
+    g_liouville = std::vector<double>(n*n*n*n,0.0);
+
     A = new matrix(n,n);
     P = std::vector<double>(n*n,0.0);
 
@@ -121,7 +124,7 @@ public:
     t_m = es.t_m;
 
     *Ccurr = *es.Ccurr; *Cprev = *es.Cprev; *Cnext = *es.Cnext;
-    g = es.g;  *A = *es.A; P = es.P;
+    g = es.g; g_liouville = es.g_liouville; *A = *es.A; P = es.P;
     *Hcurr = *es.Hcurr;  *Hprev = *es.Hprev;  *Hnext = *es.Hnext;  *dHdt  = *es.dHdt;
     *Hprimex = *es.Hprimex; *Hprimey = *es.Hprimey; *Hprimez = *es.Hprimez;
   }
@@ -129,6 +132,7 @@ public:
 
   ~ElectronicStructure(){
     if(g.size()>0) {g.clear();}
+    if(g_liouville.size()>0) {g_liouville.clear();}
     if(Ccurr!=NULL) { delete Ccurr;}// Ccurr = NULL;}
     if(Cprev!=NULL) {delete Cprev;}// Cprev = NULL;}
     if(Cnext!=NULL) {delete Cnext;}// Cnext = NULL;}
@@ -150,7 +154,7 @@ public:
     num_states = es.num_states;
     curr_state = es.curr_state;
    *Ccurr = *es.Ccurr; *Cprev = *es.Cprev; *Cnext = *es.Cnext;
-    g = es.g;  *A = *es.A; P = es.P;
+    g = es.g; g_liouville = es.g_liouville ; *A = *es.A; P = es.P;
     *Hcurr = *es.Hcurr;  *Hprev = *es.Hprev; *Hnext = *es.Hnext;
     *Hprimex = *es.Hprimex; *Hprimey = *es.Hprimey; *Hprimez = *es.Hprimez; 
     *dHdt  = *es.dHdt;
@@ -174,8 +178,6 @@ public:
 
     return *this;
   }
-
- 
 
   // Other methods
   void set_state(int indx){

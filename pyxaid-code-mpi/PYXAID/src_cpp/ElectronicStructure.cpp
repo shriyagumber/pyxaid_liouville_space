@@ -240,7 +240,6 @@ void ElectronicStructure::update_hop_prob_liouville(double dt,int boltz_flag, do
  Here we actually sum up all the transition probabilities
 *******************************************************/
   update_populations();
-
   update_liouville_populations();
 
   // Compute effective Hamiltonian
@@ -248,37 +247,57 @@ void ElectronicStructure::update_hop_prob_liouville(double dt,int boltz_flag, do
   *Heff = *Hcurr + ( Ef.M[0] * (*Hprimex) + Ef.M[1] * (*Hprimey) + Ef.M[2] * (*Hprimez));
 
   for(int i=0;i<num_states;i++){
-    double a_ii = A->M[i*num_states+i].real();
-    if (a_ii==0.0){ a_ii = 1e-12; }
 
-    double sum = 0.0;
     for(int j=0;j<num_states;j++){
-      if(j!=i){
-        // In general the expression is:
-        // Pij = (2*dt/(hbar*|c_i|^2) ) * summ_j ( Im(Hij * c_j^* * c_j)  )
-        // where Hij is for TD-SE: i*hbar*dc/dt = H * c
-        // Hcurr at this moments is -i*hbar*<i|d/dt|j>
-        // Hprime* at this moment is -i*hbar*<i|p|j>, Ef will include: 2*e/m_e * A(t) * cos(omega*t)
 
-        g[i*num_states+j] = (2.0*dt/(a_ii*hbar))*(A->M[i*num_states+j] * Heff->M[i*num_states+j]).imag(); // g_ij = P(i->j)
+      double sum = 0.0;
 
-        if(g[i*num_states+j]<0.0){ g[i*num_states+j] = 0.0; }
+      double P_ij = P[i*num_states+j];
+      if (P_ij==0.0){ P_ij = 1e-12; }
+      
+      for (int k=0;k<num_states;k++){
 
-       //------------------- Boltzmann factor -------------------
-       double E_i = Heff->M[i*num_states+i].real();
-       double E_j = Heff->M[j*num_states+j].real();
-       double dE = (E_j - E_i);
-       double bf = 1.0;
-       if(dE>Eex){  bf= exp(-((dE-Eex)/(kb*Temp))); }  // hop to higher energy state is difficult - thermal equilibrium
-                                                       // no such scaling for Hij_field - it is non-equilibrium process
+        for (int l=0;l<num_states;l++){
 
-       //------------------- Together ---------------------------      
-        g[i*num_states+j] *= bf;
+          if ((i!=k) || (j!=l)){
 
-        sum += g[i*num_states+j];
-      }// j!=i
+            // In general the expression is:
+            // g_ij = (2*dt/(hbar*|p_ij|^2) ) * ( delt_ik * Im(A_ij * A_kl_conj H_jl) + delt_jl * Im(A_ij_conj * A_kl * H_ik) )
+            // where Hij is for TD-SE: i*hbar*dc/dt = H * c
+            // Hcurr at this moments is -i*hbar*<i|d/dt|j>
+            // Hprime* at this moment is -i*hbar*<i|p|j>, Ef will include: 2*e/m_e * A(t) * cos(omega*t)
+
+            int indx = i*num_states*num_states*num_states + j*num_states*num_states + k*num_states + l;
+          
+            if (i==k){
+              g_liouville[indx] = (2.0*dt/(P_ij*hbar)) * (A->M[i*num_states+j] * std::conj(A->M[k*num_states+l]) * Heff->M[j*num_states+l]).imag();
+            }
+            else if (j==l){
+              g_liouville[indx] = (2.0*dt/(P_ij*hbar)) * (std::conj(A->M[i*num_states+j]) * A->M[k*num_states+l] * Heff->M[j*num_states+l]).imag();
+            }
+            else g_liouville[indx] = 0.0;
+
+            if(g_liouville[indx]<0.0){ g_liouville[indx] = 0.0; }
+
+            //------------------- Boltzmann factor -------------------
+            double E_i = Heff->M[i*num_states+i].real();
+            double E_j = Heff->M[j*num_states+j].real();
+            double E_k = Heff->M[k*num_states+k].real();
+            double E_l = Heff->M[l*num_states+l].real();
+            double dE = (E_i + E_j - E_k - E_l)/2;
+            double bf = 1.0;
+            if(dE>Eex){  bf= exp(-((dE-Eex)/(kb*Temp))); }
+
+            //------------------- Together --------------------------- 
+            g_liouville[indx] *= bf;
+
+            sum+=g_liouville[indx];
+
+          } //i!=k and j!=l
+        } // for l
+      } // for k
+      g_liouville[i*num_states*num_states*num_states+j*num_states*num_states+i*num_states+j] -= sum;
     }// for j
-    g[i*num_states+i] -= sum;
   }// for i
 
   delete Heff;
@@ -381,8 +400,6 @@ void ElectronicStructure::update_hop_prob_gfsh(double dt,int boltz_flag, double 
               else{  g[i*num_states+j] = 0.0; } // wrong transition
           }
         }// a[i]>1e-12
-
-
 
        //------------------- Boltzmann factor -------------------
         double E_i = Heff->M[i*num_states+i].real();
