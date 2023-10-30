@@ -57,8 +57,38 @@ void hop(vector<double>& sh_prob,int& hopstate,int numstates){
     std::cout<<"Something is wrong in hop(...) function\nExiting now...\n";
     exit(0);
   }
-   
 
+}
+
+void hop_liouville(vector<double>& sh_prob,int& hopstate,int numstates){
+/***********************************************
+ sh_prob[i] - is probability to hop from given state to state i
+ hopstate - will contain the state where we actually hopped
+************************************************/
+  int i;
+  double left,right,ksi;
+
+  int in = hopstate; // initial state
+  int hstate = -1; // set to an absurd value, so that run fails explicitly if the
+                   // surface hopping probabilities are stange
+  ksi = rand()/((double)RAND_MAX);
+
+  // But, to avoid the problems, lets renormalize the hopping probabilities
+  double nrm = 0.0;
+  for(i=0;i<numstates;i++){  nrm += sh_prob[in*numstates+i];  }  
+
+  for(i=0;i<numstates;i++){
+    if(i==0){ left = 0.0; right = (sh_prob[in*numstates+i]/nrm); }
+    else{ left = right;   right += (sh_prob[in*numstates+i]/nrm); }
+    if((left<ksi) && (ksi<=right)){ hstate = i; }
+  }
+  hopstate = hstate;
+
+  if(hstate==-1){
+    std::cout<<"Something is wrong in hop(...) function\nExiting now...\n";
+    exit(0);
+  }
+   
 }
 
 void regression(vector<double>& X,vector<double>& Y,int opt,double& a,double& b){
@@ -980,13 +1010,8 @@ void run_namd1(InputStructure& is, vector<ElectronicStructure>& me_es,vector<me_
 
       if(is.decoherence==0){  // FSSH
 //        curr_state = me_es[i].curr_state;
-        //if(is.liouville==1){
-        //  hop_liouville(me_es[i].g_liouville,me_es[i].curr_state,nst)
-        //}
-        //else{
-          hop(me_es[i].g,me_es[i].curr_state,nst);
-          curr_state = me_es[i].curr_state;
-        //}
+        hop(me_es[i].g,me_es[i].curr_state,nst);
+        curr_state = me_es[i].curr_state;
       }
       else if(is.decoherence==1){  // DISH - currently any value >0
         me_es[i].check_decoherence(is.nucl_dt,is.boltz_flag,is.Temp,rates);
