@@ -585,7 +585,12 @@ int namd(boost::python::dict inp_params){
 //    }
 //    if(params.runtype=="namd" && params.decoherence>0){
         cout<<"Starting na-md simulations with (optional) decoherence\n";
-        run_namd1(params,me_es,me_states,icond);
+        if (params.liouville==1){
+          run_namd_liouville(params,me_es,me_states,icond);
+        }
+        else{
+          run_namd1(params,me_es,me_states,icond);
+          }
 //    }
 
     oe_es.clear();

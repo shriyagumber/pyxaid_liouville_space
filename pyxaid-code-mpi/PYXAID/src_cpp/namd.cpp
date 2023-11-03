@@ -1004,9 +1004,8 @@ void run_namd1(InputStructure& is, vector<ElectronicStructure>& me_es,vector<me_
                                                  // rates are only used if decoherence==5 or decoherence==6
                                                             
       // Calculate the probabilities off all states and hopping probabilities
-      if(is.liouville==0){
-        me_es[i].update_populations();
-      }
+      
+      me_es[i].update_populations();
 
       if(is.decoherence==0){  // FSSH
 //        curr_state = me_es[i].curr_state;
@@ -1094,6 +1093,102 @@ void run_namd1(InputStructure& is, vector<ElectronicStructure>& me_es,vector<me_
 
   //=======================================================
 
-
 }
 
+void run_namd_liouville(InputStructure& is, vector<ElectronicStructure>& me_es,vector<me_state>& me_states, int icond){
+// This version is different from run_namd function in that it does not separate solving TD-SE and computation
+// of the surface hopping probabilities. This is because here we inlcude decoherence effects, which effectively
+// modify wavefunction (TD-SE solution) along the trajectories stochastically, so it is not possible to separate.
+
+  Timer timer("run_namd_liouville()");
+
+  cout<<"Entering run_namd_liouville function...\n";
+
+  // Some parameters
+  int i,j,n;
+  std::string outfile1,outfile2;
+  ofstream out1,out2;
+  int nel = is.nucl_dt/is.elec_dt; // Number of electronic iterations per 1 nuclear
+  int sz = me_es.size();           // Number of nuclear iterations (ionic steps)
+  int nst = me_es[0].num_states;   // Number of electronic states
+  int init_state = me_es[0].curr_state;
+
+  // Initialize observables
+  int curr_state;  curr_state = me_es[0].curr_state;
+  vector<double> tmp(nst,0.0);
+  vector<vector<double> > sh_pops(sz,tmp); sh_pops[0][curr_state] = 0.0;
+  vector<vector<double> > se_pops(sz,tmp); se_pops[0][curr_state] = 0.0;
+
+  // Decoherence stuff
+  vector< vector<double> > r_ij;
+  vector< vector<double> > z(nst,std::vector<double>(nst,0.0)); // 2D matrix with all components set to 0.0
+
+  vector<vector<double> > E0(nst,vector<double>(nst,0.0));// average
+  vector<vector<double> > d2E_av(nst,vector<double>(nst,0.0)); // average fluctuation of i-j pair
+  vector<vector<vector<double> > > d2E(sz,vector<vector<double> >(nst,vector<double>(nst,0.0)));//fluctuation
+  matrix rates(nst,nst);
+
+  for(n=0;n<is.num_sh_traj;n++){
+
+    me_es[0].set_state(init_state);
+    me_es[0].t_m[0] = 0.0; // Time since last hop
+
+    // Loop over time
+    for(i=0;i<sz;i++){
+
+      //============ Solve TD-SE and do SH ============
+      // Set coefficients and state from previous time step to be current ones
+      if(i>0){   me_es[i] << me_es[i-1]; } 
+
+      // Solve TD-SE for i-th time step
+      me_es[i].init_hop_prob1();
+      propagate_electronic(is,me_es,i,rates);    // update_hop_prob -is called in there 
+                                                 // rates are only used if decoherence==5 or decoherence==6
+                                                            
+      // Calculate the probabilities off all states and hopping probabilities
+      
+      me_es[i].update_populations();
+
+      hop_liouville(me_es[i].g,me_es[i].curr_state,nst);
+      curr_state = me_es[i].curr_state;   
+      
+      // Accumulate SE and SH probabilities for all states
+      sh_pops[i][curr_state] += 1.0;
+      for(j=0;j<nst;j++){ se_pops[i][j] += me_es[i].A->M[j*nst+j].real(); }
+
+    }// namdtime
+  }// for num_sh_traj
+
+  //================ Now output results ======================
+  // Output populations as a function of time
+  timer.Start("run_namd1() output");
+
+  outfile1 = is.scratch_dir+"/me_pop"+int2string(icond);
+  out1.open(outfile1.c_str(),ios::out);
+
+  outfile2 = is.scratch_dir+"/out"+int2string(icond);
+  out2.open(outfile2.c_str(),ios::out);
+
+  for(i=0;i<sz;i++){
+    //---------- SE probabilities ----------
+    out1<<"time "<<i<<" "; double tot = 0.0;
+    for(j=0;j<nst;j++){
+      se_pops[i][j] /= ((double)is.num_sh_traj);
+      out1<<"P("<<j<<")= "<<setprecision(10)<<se_pops[i][j]<<"  ";tot += se_pops[i][j];
+    } out1<<"Total= "<<tot<<endl;
+
+    //--------- SH probabilities ----------
+    out2<<"time "<<i<<" ";
+    for(j=0;j<nst;j++){
+      sh_pops[i][j] /= ((double)is.num_sh_traj);
+      out2<<"P("<<j<<")= "<<setprecision(10)<<sh_pops[i][j]<<" ";
+    } out2<<endl;
+  }
+
+  out1.close();
+  out2.close();
+  timer.Stop();
+
+  //=======================================================//
+
+}
