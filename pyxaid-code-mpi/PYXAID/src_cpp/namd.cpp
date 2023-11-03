@@ -1115,6 +1115,10 @@ void run_namd_liouville(InputStructure& is, vector<ElectronicStructure>& me_es,v
 
   // Initialize observables
   int curr_state;  curr_state = me_es[0].curr_state;
+
+  vector<int> curr_liouville_state(2,curr_state);
+  cout<<"Current Liouville state: "<<curr_liouville_state;
+  
   vector<double> tmp(nst,0.0);
   vector<vector<double> > sh_pops(sz,tmp); sh_pops[0][curr_state] = 0.0;
   vector<vector<double> > se_pops(sz,tmp); se_pops[0][curr_state] = 0.0;
