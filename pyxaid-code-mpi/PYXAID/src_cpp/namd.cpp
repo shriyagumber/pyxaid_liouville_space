@@ -65,26 +65,33 @@ void hop_liouville(vector<double>& sh_prob,int& hopstate,int numstates){
  sh_prob[i] - is probability to hop from given state to state i
  hopstate - will contain the state where we actually hopped
 ************************************************/
-  int i;
+  int k,l;
   double left,right,ksi;
 
-  int in = hopstate; // initial state
-  int hstate = -1; // set to an absurd value, so that run fails explicitly if the
+  vector<int> in = hopstate; // initial state
+  vector<int> hstate(2,-1); // set to an absurd value, so that run fails explicitly if the
                    // surface hopping probabilities are stange
   ksi = rand()/((double)RAND_MAX);
 
   // But, to avoid the problems, lets renormalize the hopping probabilities
   double nrm = 0.0;
-  for(i=0;i<numstates;i++){  nrm += sh_prob[in*numstates+i];  }  
 
-  for(i=0;i<numstates;i++){
-    if(i==0){ left = 0.0; right = (sh_prob[in*numstates+i]/nrm); }
-    else{ left = right;   right += (sh_prob[in*numstates+i]/nrm); }
-    if((left<ksi) && (ksi<=right)){ hstate = i; }
+  for(k=0;k<numstates;k++){ 
+    for(l=0;<numstates;l++){
+     nrm += sh_prob[in[0]*numstates*numstates*numstates+in[1]*numstates*numstates+k*numstates+l];  
+    }
+  }  
+
+  for(j=0;j<numstates;j++){ 
+    for(k=0;k<numstates;k++){
+      if(k==0 && j==0){ left = 0.0; right=(sh_prob[in[0]*numstates*numstates*numstates+in[1]*numstates*numstates+k*numstates+l]/nrm)}
+      else(left=right; right+=(sh_prob[in[0]*numstates*numstates*numstates+in[1]*numstates*numstates+k*numstates+l]/nrm))
+      if((left<ksi) && (ksi<=right)){ hstate = {k, l}; }
+    }
   }
-  hopstate = hstate;
+  hopstate = hstate; 
 
-  if(hstate==-1){
+  if(hstate[0]==-1 || hstate[1]==-1){
     std::cout<<"Something is wrong in hop(...) function\nExiting now...\n";
     exit(0);
   }
@@ -1105,7 +1112,7 @@ void run_namd_liouville(InputStructure& is, vector<ElectronicStructure>& me_es,v
   cout<<"Entering run_namd_liouville function...\n";
 
   // Some parameters
-  int i,j,n;
+  int i,n,k,l;
   std::string outfile1,outfile2;
   ofstream out1,out2;
   int nel = is.nucl_dt/is.elec_dt; // Number of electronic iterations per 1 nuclear
@@ -1118,10 +1125,11 @@ void run_namd_liouville(InputStructure& is, vector<ElectronicStructure>& me_es,v
 
   vector<int> curr_liouville_state(2,curr_state);
   curr_liouville_state = me_es[0].curr_liouville_state;
+  int curr_liouville_state_1d = curr_liouville_state[0]*nst+curr_liouville_state[1];
 
-  vector<double> tmp(nst,0.0);
-  vector<vector<double> > sh_pops(sz,tmp); sh_pops[0][curr_state] = 0.0;
-  vector<vector<double> > se_pops(sz,tmp); se_pops[0][curr_state] = 0.0;
+  vector<double> tmp(nst*nst,0.0);
+  vector<vector<double> > sh_pops(sz,tmp); sh_pops[0][curr_liouville_state_1d] = 0.0;
+  vector<vector<double> > se_pops(sz,tmp); se_pops[0][curr_liouville_state_1d] = 0.0;
 
   // Decoherence stuff
   vector< vector<double> > r_ij;
@@ -1153,19 +1161,26 @@ void run_namd_liouville(InputStructure& is, vector<ElectronicStructure>& me_es,v
       
       me_es[i].update_populations();
 
-      hop_liouville(me_es[i].g,me_es[i].curr_state,nst);
-      curr_state = me_es[i].curr_state;   
-      
+      //hop_liouville changes the value of me_es[i].curr_liouville_state based on probabilities
+      hop_liouville(me_es[i].g_liouville,me_es[i].curr_liouville_state,nst);
+      curr_liouville_state = me_es[i].curr_liouville_state;   
+      curr_liouville_state_1d = curr_liouville_state[0]*nst+curr_liouville_state[1];
+
       // Accumulate SE and SH probabilities for all states
-      sh_pops[i][curr_state] += 1.0;
-      for(j=0;j<nst;j++){ se_pops[i][j] += me_es[i].A->M[j*nst+j].real(); }
+      sh_pops[i][curr_liouville_state_1d] += 1.0;
+      
+      for(k=0;k<nst;k++){
+        for(l=0;l<nst;l++){
+          se_pops[i][k*nst+l] += me_es[i].P[k*nst+l].real();
+        }
+      }
 
     }// namdtime
   }// for num_sh_traj
 
   //================ Now output results ======================
   // Output populations as a function of time
-  timer.Start("run_namd1() output");
+  timer.Start("run_namd_liouville() output");
 
   outfile1 = is.scratch_dir+"/me_pop"+int2string(icond);
   out1.open(outfile1.c_str(),ios::out);
@@ -1176,16 +1191,20 @@ void run_namd_liouville(InputStructure& is, vector<ElectronicStructure>& me_es,v
   for(i=0;i<sz;i++){
     //---------- SE probabilities ----------
     out1<<"time "<<i<<" "; double tot = 0.0;
-    for(j=0;j<nst;j++){
-      se_pops[i][j] /= ((double)is.num_sh_traj);
-      out1<<"P("<<j<<")= "<<setprecision(10)<<se_pops[i][j]<<"  ";tot += se_pops[i][j];
+    for(k=0;k<nst;k++){
+      for(l=0;l<nst;l++){
+        se_pops[i][k*nst+l] /= ((double)is.num_sh_traj);
+        out1<<"P("<<k*nst+l<<")= "<<setprecision(10)<<se_pops[i][k*nst+l]<<"  ";tot += se_pops[i][k*nst+l];
+      }
     } out1<<"Total= "<<tot<<endl;
 
     //--------- SH probabilities ----------
     out2<<"time "<<i<<" ";
-    for(j=0;j<nst;j++){
-      sh_pops[i][j] /= ((double)is.num_sh_traj);
-      out2<<"P("<<j<<")= "<<setprecision(10)<<sh_pops[i][j]<<" ";
+    for(k=0;k<nst;k++){
+      for(l=0;l<nst;l++){
+        sh_pops[i][k*nst+l] /= ((double)is.num_sh_traj);
+        out2<<"P("<<k*nst+l<<")= "<<setprecision(10)<<sh_pops[i][k*nst+l]<<" ";
+      }
     } out2<<endl;
   }
 
