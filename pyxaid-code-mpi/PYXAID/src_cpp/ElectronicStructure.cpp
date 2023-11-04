@@ -186,6 +186,19 @@ void ElectronicStructure::init_hop_prob1(){
   }// for i
 }
 
+void ElectronicStructure::init_liouville_hop_prob1(){
+  for(int i=0;i<num_states;i++){
+    for(int j=0;j<num_states;j++){
+      for(int k=0;k<num_states;k++){
+        for(int l=0;l<num_states;l++){
+          if(k!=i || l!=j){ g_liouville[i*num_states*num_states*num_states+j*num_states*num_states+k*num_states+l] = 0.0; }
+          else{ g_liouville[i*num_states*num_states*num_states+j*num_states*num_states+k*num_states+l] = 1.0; }
+        }//for l
+      }//for k
+    }// for j
+  }// for i
+}
+
 void ElectronicStructure::update_hop_prob_fssh(double dt,int boltz_flag, double Temp,matrix& Ef,double Eex, matrix& rates){
 /*******************************************************
  Here we actually sum up all the transition probabilities

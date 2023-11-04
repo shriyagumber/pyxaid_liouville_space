@@ -999,7 +999,7 @@ void run_namd1(InputStructure& is, vector<ElectronicStructure>& me_es,vector<me_
       if(i>0){   me_es[i] << me_es[i-1]; } 
 
       // Solve TD-SE for i-th time step
-      me_es[i].init_hop_prob1();
+      me_es[i].init_liouville_hop_prob1();
       propagate_electronic(is,me_es,i,rates);    // update_hop_prob -is called in there 
                                                  // rates are only used if decoherence==5 or decoherence==6
                                                             
@@ -1117,20 +1117,11 @@ void run_namd_liouville(InputStructure& is, vector<ElectronicStructure>& me_es,v
   int curr_state;  curr_state = me_es[0].curr_state;
 
   vector<int> curr_liouville_state(2,curr_state);
-  cout<<"Current Liouville state: "<<curr_liouville_state;
-  
+  curr_liouville_state = me_es[0].curr_liouville_state;
+
   vector<double> tmp(nst,0.0);
   vector<vector<double> > sh_pops(sz,tmp); sh_pops[0][curr_state] = 0.0;
   vector<vector<double> > se_pops(sz,tmp); se_pops[0][curr_state] = 0.0;
-
-  // Decoherence stuff
-  vector< vector<double> > r_ij;
-  vector< vector<double> > z(nst,std::vector<double>(nst,0.0)); // 2D matrix with all components set to 0.0
-
-  vector<vector<double> > E0(nst,vector<double>(nst,0.0));// average
-  vector<vector<double> > d2E_av(nst,vector<double>(nst,0.0)); // average fluctuation of i-j pair
-  vector<vector<vector<double> > > d2E(sz,vector<vector<double> >(nst,vector<double>(nst,0.0)));//fluctuation
-  matrix rates(nst,nst);
 
   for(n=0;n<is.num_sh_traj;n++){
 
