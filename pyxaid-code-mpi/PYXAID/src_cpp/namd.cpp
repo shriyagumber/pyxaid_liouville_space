@@ -60,7 +60,7 @@ void hop(vector<double>& sh_prob,int& hopstate,int numstates){
 
 }
 
-void hop_liouville(vector<double>& sh_prob,int& hopstate,int numstates){
+void hop_liouville(vector<double>& sh_prob,vector<int>& hopstate,int numstates){
 /***********************************************
  sh_prob[i] - is probability to hop from given state to state i
  hopstate - will contain the state where we actually hopped
@@ -77,15 +77,15 @@ void hop_liouville(vector<double>& sh_prob,int& hopstate,int numstates){
   double nrm = 0.0;
 
   for(k=0;k<numstates;k++){ 
-    for(l=0;<numstates;l++){
+    for(l=0;l<numstates;l++){
      nrm += sh_prob[in[0]*numstates*numstates*numstates+in[1]*numstates*numstates+k*numstates+l];  
     }
   }  
 
-  for(j=0;j<numstates;j++){ 
-    for(k=0;k<numstates;k++){
-      if(k==0 && j==0){ left = 0.0; right=(sh_prob[in[0]*numstates*numstates*numstates+in[1]*numstates*numstates+k*numstates+l]/nrm)}
-      else(left=right; right+=(sh_prob[in[0]*numstates*numstates*numstates+in[1]*numstates*numstates+k*numstates+l]/nrm))
+  for(k=0;k<numstates;k++){ 
+    for(l=0;l<numstates;l++){
+      if(k==0 && l==0){ left = 0.0; right=(sh_prob[in[0]*numstates*numstates*numstates+in[1]*numstates*numstates+k*numstates+l]/nrm);}
+      else{left=right; right+=(sh_prob[in[0]*numstates*numstates*numstates+in[1]*numstates*numstates+k*numstates+l]/nrm);}
       if((left<ksi) && (ksi<=right)){ hstate = {k, l}; }
     }
   }
@@ -1171,7 +1171,7 @@ void run_namd_liouville(InputStructure& is, vector<ElectronicStructure>& me_es,v
       
       for(k=0;k<nst;k++){
         for(l=0;l<nst;l++){
-          se_pops[i][k*nst+l] += me_es[i].P[k*nst+l].real();
+          se_pops[i][k*nst+l] += me_es[i].P[k*nst+l];
         }
       }
 
