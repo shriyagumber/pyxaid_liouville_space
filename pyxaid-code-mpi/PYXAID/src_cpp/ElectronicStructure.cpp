@@ -286,7 +286,7 @@ void ElectronicStructure::update_hop_prob_liouville(double dt,int boltz_flag, do
               g_liouville[indx] = (2.0*dt/(P_ij*hbar)) * (A->M[i*num_states+j] * std::conj(A->M[k*num_states+l]) * Heff->M[j*num_states+l]).imag();
             }
             else if (j==l){
-              g_liouville[indx] = (2.0*dt/(P_ij*hbar)) * (std::conj(A->M[i*num_states+j]) * A->M[k*num_states+l] * Heff->M[j*num_states+l]).imag();
+              g_liouville[indx] = (2.0*dt/(P_ij*hbar)) * (std::conj(A->M[i*num_states+j]) * A->M[k*num_states+l] * Heff->M[i*num_states+k]).imag();
             }
             else g_liouville[indx] = 0.0;
 
@@ -541,7 +541,7 @@ void ElectronicStructure::propagate_coefficients(double dt,matrix& Ef){
   }
 
   // exp(iL1 * dt)
-  for(i=0;i<num_states;i++){ 
+  for(i=0;i<num_states;i++){
     Hprime = Ef.M[0]*Hprimex->M[i*num_states+i] +
              Ef.M[1]*Hprimey->M[i*num_states+i] +
              Ef.M[2]*Hprimez->M[i*num_states+i];
