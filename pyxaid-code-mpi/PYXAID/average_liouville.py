@@ -192,8 +192,6 @@ def average(namdtime,num_states,iconds,opt,MS,inp_dir,res_dir):
             write_array(res_dir+"/sh_en_ex",in_ex,namdtime,1,EP,num_runs)
             write_array(res_dir+"/se_en_ex",in_ex,namdtime,1,EC,num_runs)
 
-
-
 #>>>>>>>> Second part Macrostates populations and energies <<<<<<
     if opt==2 or opt==12:
         num_macro_states = len(MS)
@@ -240,12 +238,38 @@ def average(namdtime,num_states,iconds,opt,MS,inp_dir,res_dir):
                 En = add_arrays(En,cpEn)
 
                 #======================= out file ===============================
-                pP = get_file(res_dir+"/sh_pop_ex",MS[i][j],namdtime,num_states,3,2) # Dimension: T x num_states
+                pP1 = get_file(res_dir+"/sh_pop_ex",MS[i][j],namdtime,num_states,3,2) # Dimension: T x num_states\
+
+                pP = []
+                for t in range(0, namdtime):
+                    temp_pP = []
+                    for i in range(0, num_states):
+                        temp =  pP1[t][i*num_states+i]
+                        for j in range(0, num_states):
+                            if i!=j:
+                                temp += pP1[t][i*num_states+j]/2
+                                temp += pP1[t][j*num_states+i]/2
+                        temp_pP.append(temp)
+                    pP.append(temp_pP)
+
                 cpP = contract_array(pP,MS) # Dimension:  T x num_macro_states
                 P = add_arrays(P,cpP)
   
                 #===================== me_pop file ==============================
-                cC = get_file(res_dir+"/se_pop_ex",MS[i][j],namdtime,num_states,3,2) # Dimension: T x num_states
+                cC1 = get_file(res_dir+"/se_pop_ex",MS[i][j],namdtime,num_states,3,2) # Dimension: T x num_states
+
+                cC = []
+                for t in range(0, namdtime):
+                    temp_cC = []
+                    for i in range(0, num_states):
+                        temp =  cC1[t][i*num_states+i]
+                        for j in range(0, num_states):
+                            if i!=j:
+                                temp += cC1[t][i*num_states+j]/2
+                                temp += cC1[t][j*num_states+i]/2
+                        temp_cC.append(temp)
+                    cC.append(temp_cC)
+
                 ccC = contract_array(cC,MS)  # Dimension: T x num_macro_states
                 C = add_arrays(C,ccC)
 
