@@ -140,12 +140,12 @@ def average(namdtime,num_states,iconds,opt,MS,inp_dir,res_dir):
                     pP = []
                     for t in range(0, namdtime):
                         temp_pP = []
-                        for i in range(0, num_states):
-                            temp =  pP1[t][i*num_states+i]
-                            for j in range(0, num_states):
-                                if i!=j:
-                                    temp += pP1[t][i*num_states+j]/2
-                                    temp += pP1[t][j*num_states+i]/2
+                        for x in range(0, num_states):
+                            temp =  pP1[t][x*num_states+x]
+                            for y in range(0, num_states):
+                                if x!=y:
+                                    temp += pP1[t][x*num_states+y]/2
+                                    temp += pP1[t][y*num_states+x]/2
                             temp_pP.append(temp)
                         pP.append(temp_pP)
                          
@@ -164,12 +164,12 @@ def average(namdtime,num_states,iconds,opt,MS,inp_dir,res_dir):
                     cC = []
                     for t in range(0, namdtime):
                         temp_cC = []
-                        for i in range(0, num_states):
-                            temp =  cC1[t][i*num_states+i]
-                            for j in range(0, num_states):
-                                if i!=j:
-                                    temp += cC1[t][i*num_states+j]/2
-                                    temp += cC1[t][j*num_states+i]/2
+                        for x in range(0, num_states):
+                            temp =  cC1[t][x*num_states+x]
+                            for y in range(0, num_states):
+                                if x!=y:
+                                    temp += cC1[t][x*num_states+y]/2
+                                    temp += cC1[t][y*num_states+x]/2
                             temp_cC.append(temp)
                         cC.append(temp_cC)
                         
@@ -243,12 +243,12 @@ def average(namdtime,num_states,iconds,opt,MS,inp_dir,res_dir):
                 pP = []
                 for t in range(0, namdtime):
                     temp_pP = []
-                    for i in range(0, num_states):
-                        temp =  pP1[t][i*num_states+i]
-                        for j in range(0, num_states):
-                            if i!=j:
-                                temp += pP1[t][i*num_states+j]/2
-                                temp += pP1[t][j*num_states+i]/2
+                    for x in range(0, num_states):
+                        temp =  pP1[t][x*num_states+x]
+                        for y in range(0, num_states):
+                            if x!=y:
+                                temp += pP1[t][x*num_states+y]/2
+                                temp += pP1[t][y*num_states+x]/2
                         temp_pP.append(temp)
                     pP.append(temp_pP)
 
@@ -261,12 +261,12 @@ def average(namdtime,num_states,iconds,opt,MS,inp_dir,res_dir):
                 cC = []
                 for t in range(0, namdtime):
                     temp_cC = []
-                    for i in range(0, num_states):
-                        temp =  cC1[t][i*num_states+i]
-                        for j in range(0, num_states):
-                            if i!=j:
-                                temp += cC1[t][i*num_states+j]/2
-                                temp += cC1[t][j*num_states+i]/2
+                    for x in range(0, num_states):
+                        temp =  cC1[t][x*num_states+x]
+                        for y in range(0, num_states):
+                            if x!=y:
+                                temp += cC1[t][x*num_states+y]/2
+                                temp += cC1[t][y*num_states+x]/2
                         temp_cC.append(temp)
                     cC.append(temp_cC)
 
