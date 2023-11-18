@@ -38,7 +38,7 @@ public:
   //=========== Members ===============
   int num_states;                 // number of adiabatic states
   int curr_state;                 // current adiabatic state
-  vector<int> curr_liouville_state;
+  vector<int> curr_liouville_state = vector<int>(2);
 
   // Wavefunction
   matrix* Ccurr;
@@ -76,7 +76,6 @@ public:
     Cprev = new matrix(n,1); *Cprev = tmp;
     Cnext = new matrix(n,1); *Cnext = tmp;
 
-    curr_liouville_state = std::vector<int>(2,0);
     g = std::vector<double>(n*n,0.0);  // g[i*n+j] ~=g[i][j] - probability of i->j transition
     g_liouville = std::vector<double>(n*n*n*n,0.0);
 
@@ -107,7 +106,6 @@ public:
     Cprev = new matrix(n,1);
     Cnext = new matrix(n,1);
 
-    curr_liouville_state = std::vector<int>(2,0);
     g = std::vector<double>(n*n,0.0);  // g[i*n+j] ~=g[i][j] - probability of i->j transition
     g_liouville = std::vector<double>(n*n*n*n,0.0);
 
@@ -191,8 +189,8 @@ public:
       if(i==indx){ Ccurr->M[i] = complex<double>(1.0,0.0); } else{  Ccurr->M[i] = 0.0; }
     }
     curr_state = indx;
-    curr_liouville_state[0] = curr_state;
-    curr_liouville_state[1] = curr_state;
+    curr_liouville_state[0] = indx;
+    curr_liouville_state[1] = indx;
   }
   double energy();                // calculate the total energy
   double norm(); // calculate the norm of the wavefunction

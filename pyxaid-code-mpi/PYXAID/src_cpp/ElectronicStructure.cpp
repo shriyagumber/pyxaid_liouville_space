@@ -260,7 +260,6 @@ void ElectronicStructure::update_hop_prob_liouville(double dt,int boltz_flag, do
   *Heff = *Hcurr + ( Ef.M[0] * (*Hprimex) + Ef.M[1] * (*Hprimey) + Ef.M[2] * (*Hprimez));
 
   for(int i=0;i<num_states;i++){
-
     for(int j=0;j<num_states;j++){
 
       double sum = 0.0;
@@ -269,7 +268,6 @@ void ElectronicStructure::update_hop_prob_liouville(double dt,int boltz_flag, do
       if (P_ij==0.0){ P_ij = 1e-12; }
       
       for (int k=0;k<num_states;k++){
-
         for (int l=0;l<num_states;l++){
 
           if ((i!=k) || (j!=l)){
@@ -297,7 +295,7 @@ void ElectronicStructure::update_hop_prob_liouville(double dt,int boltz_flag, do
             double E_j = Heff->M[j*num_states+j].real();
             double E_k = Heff->M[k*num_states+k].real();
             double E_l = Heff->M[l*num_states+l].real();
-            double dE = (E_i + E_j - E_k - E_l)/2;
+            double dE = (E_k + E_l - E_i - E_j)/2;
             double bf = 1.0;
             if(dE>Eex){  bf= exp(-((dE-Eex)/(kb*Temp))); }
 
@@ -309,7 +307,9 @@ void ElectronicStructure::update_hop_prob_liouville(double dt,int boltz_flag, do
           } //i!=k and j!=l
         } // for l
       } // for k
-      g_liouville[i*num_states*num_states*num_states+j*num_states*num_states+i*num_states+j] -= sum;
+      int indx = i*num_states*num_states*num_states+j*num_states*num_states+i*num_states+j;
+      g_liouville[indx] -= sum;
+
     }// for j
   }// for i
 

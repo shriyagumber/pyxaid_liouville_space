@@ -78,17 +78,22 @@ void hop_liouville(vector<double>& sh_prob,vector<int>& hopstate,int numstates){
 
   for(k=0;k<numstates;k++){ 
     for(l=0;l<numstates;l++){
-     nrm += sh_prob[in[0]*numstates*numstates*numstates+in[1]*numstates*numstates+k*numstates+l];  
+      if (in[0]==k || in[1]==l){
+        nrm += sh_prob[in[0]*numstates*numstates*numstates+in[1]*numstates*numstates+k*numstates+l];
+      }  
     }
   }  
 
   for(k=0;k<numstates;k++){ 
     for(l=0;l<numstates;l++){
-      if(k==0 && l==0){ left = 0.0; right=(sh_prob[in[0]*numstates*numstates*numstates+in[1]*numstates*numstates+k*numstates+l]/nrm);}
-      else{left=right; right+=(sh_prob[in[0]*numstates*numstates*numstates+in[1]*numstates*numstates+k*numstates+l]/nrm);}
-      if((left<ksi) && (ksi<=right)){ hstate = {k, l}; }
-    }
-  }
+      if (in[0]==k || in[1]==l){
+        if(k==0 && l==0){ left = 0.0; right=(sh_prob[in[0]*numstates*numstates*numstates+in[1]*numstates*numstates+k*numstates+l]/nrm);}
+        else{left=right; right+=(sh_prob[in[0]*numstates*numstates*numstates+in[1]*numstates*numstates+k*numstates+l]/nrm);}
+        if((left<ksi) && (ksi<=right)){ hstate = {k, l}; }
+      } //i==k || j==l
+    } //l
+  } //k
+
   hopstate = hstate; 
 
   if(hstate[0]==-1 || hstate[1]==-1){
