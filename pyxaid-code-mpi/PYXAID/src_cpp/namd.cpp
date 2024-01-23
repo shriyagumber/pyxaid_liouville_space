@@ -60,7 +60,7 @@ void hop(vector<double>& sh_prob,int& hopstate,int numstates){
 
 }
 
-void hop_liouville(vector<double>& sh_prob,vector<int>& hopstate,int numstates){
+void hop_liouville(vector<double>& sh_prob,vector<int>& hopstate,int numstates, vector<vector<int> >& lio_state_seq){
 /***********************************************
  sh_prob[i] - is probability to hop from given state to state i
  hopstate - will contain the state where we actually hopped
@@ -82,13 +82,25 @@ void hop_liouville(vector<double>& sh_prob,vector<int>& hopstate,int numstates){
     }
   }  
 
-  for(k=0;k<numstates;k++){ 
-    for(l=0;l<numstates;l++){
-      if(k==0 && l==0){ left = 0.0; right=(sh_prob[in[0]*numstates*numstates*numstates+in[1]*numstates*numstates+k*numstates+l]/nrm);}
-      else{left=right; right+=(sh_prob[in[0]*numstates*numstates*numstates+in[1]*numstates*numstates+k*numstates+l]/nrm);}
-      if((left<ksi) && (ksi<=right)){ hstate[0]=k; hstate[1]=l; }
-    } //l
-  } //k
+  for (int i = 0; i < lio_state_seq.size(); i++) {
+
+    k = lio_state_seq[i][0];
+    l = lio_state_seq[i][1];
+
+    if(k==0 && l==0){ left = 0.0; right=(sh_prob[in[0]*numstates*numstates*numstates+in[1]*numstates*numstates+k*numstates+l]/nrm);}
+    else{left=right; right+=(sh_prob[in[0]*numstates*numstates*numstates+in[1]*numstates*numstates+k*numstates+l]/nrm);}
+
+    if((left<ksi) && (ksi<=right)){ hstate[0]=k; hstate[1]=l;}
+
+  }
+
+//  for(k=0;k<numstates;k++){ 
+//    for(l=0;l<numstates;l++){
+//      if(k==0 && l==0){ left = 0.0; right=(sh_prob[in[0]*numstates*numstates*numstates+in[1]*numstates*numstates+k*numstates+l]/nrm);}
+//      else{left=right; right+=(sh_prob[in[0]*numstates*numstates*numstates+in[1]*numstates*numstates+k*numstates+l]/nrm);}
+//      if((left<ksi) && (ksi<=right)){ hstate[0]=k; hstate[1]=l; }
+//    } //l
+//  } //k
 
   hopstate = hstate; 
 
@@ -1123,6 +1135,7 @@ void run_namd_liouville(InputStructure& is, vector<ElectronicStructure>& me_es,v
 
   // Initialize observables
   int curr_state;  curr_state = me_es[0].curr_state;
+  matrix Ef(3,1);
 
   vector<int> curr_liouville_state(2,curr_state);
   curr_liouville_state = me_es[0].curr_liouville_state;
@@ -1162,8 +1175,11 @@ void run_namd_liouville(InputStructure& is, vector<ElectronicStructure>& me_es,v
       
       me_es[i].update_populations();
 
+      me_es[i].state_seq();
+
       //hop_liouville changes the value of me_es[i].curr_liouville_state based on probabilities
       hop_liouville(me_es[i].g_liouville,me_es[i].curr_liouville_state,nst);
+
       curr_liouville_state = me_es[i].curr_liouville_state;   
       curr_liouville_state_1d = curr_liouville_state[0]*nst+curr_liouville_state[1];
 

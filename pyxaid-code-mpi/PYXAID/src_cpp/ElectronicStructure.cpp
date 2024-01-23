@@ -15,6 +15,7 @@
 #include <iostream>
 #include <iomanip>
 #include <sstream>
+#include <algorithm>
 
 using namespace std;
 
@@ -25,6 +26,24 @@ double ElectronicStructure::energy(){
   double res = ( (*Ccurr).H() * (*Hcurr) * (*Ccurr)).M[0].real(); //0.0;
   return res;
 }
+
+struct IndexDiff {
+    int k;
+    int l;
+    double diff;
+
+    IndexDiff(int k, int l, double diff) {
+        this->k = k;
+        this->l = l;
+        this->diff = diff;
+    }
+};
+
+// Comparator function for sorting
+bool compareDiff(const IndexDiff& a, const IndexDiff& b) {
+    return a.diff > b.diff;
+}
+
 
 void ElectronicStructure::update_populations(){
   *A = ((*Ccurr).conj()) * ((*Ccurr).T());
@@ -315,6 +334,39 @@ void ElectronicStructure::update_hop_prob_liouville(double dt,int boltz_flag, do
 
   delete Heff;
 }
+
+void ElectronicStructure::state_seq(){
+
+  matrix* Heff; Heff = new matrix(num_states,num_states);
+  *Heff = *Hcurr;
+
+  vector<int> in = curr_liouville_state;
+  int i = in[0];
+  int j = in[1];
+
+  double E_i = Heff->M[i*num_states+i].real();
+  double E_j = Heff->M[j*num_states+j].real();
+  double E_ij = (E_i + E_j)/2.0;
+  std::vector<IndexDiff> diffList;
+
+  for(int k=0;k<num_states;k++){
+    for(int l=0;l<num_states;l++){
+      double E_k = Heff->M[k*num_states+k].real();
+      double E_l = Heff->M[l*num_states+l].real();
+      double E_kl = (E_k + E_l)/2.0;
+      double diff = E_ij - E_kl ;
+      diffList.push_back(IndexDiff(k, l, diff));
+    }
+  }
+  std::sort(diffList.begin(), diffList.end(), compareDiff);
+  for (int i = 0; i < diffList.size(); i++) {
+    vector<int> pair(2);  // Initializing each pair with size 2
+    pair[0] = diffList[i].k;   // Assign k to the first element
+    pair[1] = diffList[i].l;   // Assign l to the second element
+    lio_state_seq[i]= pair;
+  }
+}
+
 
 void ElectronicStructure::update_hop_prob_mssh(double dt,int boltz_flag, double Temp,matrix& Ef,double Eex, matrix& rates){
 /*******************************************************

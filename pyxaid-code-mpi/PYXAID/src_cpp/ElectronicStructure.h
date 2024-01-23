@@ -59,6 +59,7 @@ public:
 
   vector<double> g; // num_states x num_states matrix, reshaped in 1D array
   vector<double> g_liouville;
+  vector<vector<int> > lio_state_seq;
 
   // DISH variables:
   vector<double> tau_m; // times since last decoherence even for all PES (actually rates, that is inverse times)
@@ -78,6 +79,8 @@ public:
 
     g = std::vector<double>(n*n,0.0);  // g[i*n+j] ~=g[i][j] - probability of i->j transition
     g_liouville = std::vector<double>(n*n*n*n,0.0);
+
+    lio_state_seq =  std::vector<std::vector<int> >(n * n, std::vector<int>(2, 0));
 
     A = new matrix(n,n); *A = tmp;
     P = std::vector<double>(n*n,0.0);
@@ -108,6 +111,7 @@ public:
 
     g = std::vector<double>(n*n,0.0);  // g[i*n+j] ~=g[i][j] - probability of i->j transition
     g_liouville = std::vector<double>(n*n*n*n,0.0);
+    lio_state_seq =  std::vector<std::vector<int> >(n * n, std::vector<int>(2, 0));
 
     A = new matrix(n,n);
     P = std::vector<double>(n*n,0.0);
@@ -126,7 +130,7 @@ public:
 
     curr_liouville_state = es.curr_liouville_state;
     *Ccurr = *es.Ccurr; *Cprev = *es.Cprev; *Cnext = *es.Cnext;
-    g = es.g; g_liouville = es.g_liouville; *A = *es.A; P = es.P;
+    g = es.g; g_liouville = es.g_liouville; *A = *es.A; P = es.P; lio_state_seq = es.lio_state_seq;
     *Hcurr = *es.Hcurr;  *Hprev = *es.Hprev;  *Hnext = *es.Hnext;  *dHdt  = *es.dHdt;
     *Hprimex = *es.Hprimex; *Hprimey = *es.Hprimey; *Hprimez = *es.Hprimez;
   }
@@ -148,7 +152,8 @@ public:
     if(Hprimez!=NULL){ delete Hprimez; }
     if(tau_m.size()>0){ tau_m.clear(); }
     if(t_m.size()>0){ t_m.clear(); }
-    if(P.size()>0) {P.clear();} 
+    if(P.size()>0) {P.clear();}
+    if(lio_state_seq.size()>0) {lio_state_seq.clear();} 
   }
 
 
@@ -160,7 +165,7 @@ public:
     g = es.g; g_liouville = es.g_liouville ; *A = *es.A; P = es.P;
     *Hcurr = *es.Hcurr;  *Hprev = *es.Hprev; *Hnext = *es.Hnext;
     *Hprimex = *es.Hprimex; *Hprimey = *es.Hprimey; *Hprimez = *es.Hprimez; 
-    *dHdt  = *es.dHdt;
+    *dHdt  = *es.dHdt; lio_state_seq = es.lio_state_seq;
     tau_m = es.tau_m;  t_m = es.t_m;
     return *this;
   }
@@ -200,7 +205,7 @@ public:
 
   void update_hop_prob(double dt,int is_boltz_flag,double Temp,matrix& Ef);
 
-
+  void state_seq();
   void update_hop_prob_fssh(double dt,int is_boltz_flag,double Temp,matrix& Ef,double Ex, matrix&);
   void update_hop_prob_mssh(double dt,int is_boltz_flag,double Temp,matrix& Ef,double Ex, matrix&);
   void update_hop_prob_gfsh(double dt,int is_boltz_flag,double Temp,matrix& Ef,double Ex, matrix&);
