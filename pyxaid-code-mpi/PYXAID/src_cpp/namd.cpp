@@ -78,19 +78,15 @@ void hop_liouville(vector<double>& sh_prob,vector<int>& hopstate,int numstates){
 
   for(k=0;k<numstates;k++){ 
     for(l=0;l<numstates;l++){
-      if (in[0]==k || in[1]==l){
-        nrm += sh_prob[in[0]*numstates*numstates*numstates+in[1]*numstates*numstates+k*numstates+l];
-      }  
+      nrm += sh_prob[in[0]*numstates*numstates*numstates+in[1]*numstates*numstates+k*numstates+l];
     }
   }  
 
   for(k=0;k<numstates;k++){ 
     for(l=0;l<numstates;l++){
-      if (in[0]==k || in[1]==l){
-        if(k==0 && l==0){ left = 0.0; right=(sh_prob[in[0]*numstates*numstates*numstates+in[1]*numstates*numstates+k*numstates+l]/nrm);}
-        else{left=right; right+=(sh_prob[in[0]*numstates*numstates*numstates+in[1]*numstates*numstates+k*numstates+l]/nrm);}
-        if((left<ksi) && (ksi<=right)){ hstate = {k, l}; }
-      } //i==k || j==l
+      if(k==0 && l==0){ left = 0.0; right=(sh_prob[in[0]*numstates*numstates*numstates+in[1]*numstates*numstates+k*numstates+l]/nrm);}
+      else{left=right; right+=(sh_prob[in[0]*numstates*numstates*numstates+in[1]*numstates*numstates+k*numstates+l]/nrm);}
+      if((left<ksi) && (ksi<=right)){ hstate[0]=k; hstate[1]=l; }
     } //l
   } //k
 
@@ -1011,7 +1007,7 @@ void run_namd1(InputStructure& is, vector<ElectronicStructure>& me_es,vector<me_
       if(i>0){   me_es[i] << me_es[i-1]; } 
 
       // Solve TD-SE for i-th time step
-      me_es[i].init_liouville_hop_prob1();
+      me_es[i].init_hop_prob1();
       propagate_electronic(is,me_es,i,rates);    // update_hop_prob -is called in there 
                                                  // rates are only used if decoherence==5 or decoherence==6
                                                             
