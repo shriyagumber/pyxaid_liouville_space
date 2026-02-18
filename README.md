@@ -1,6 +1,6 @@
-# PYXAID Liouville-Space MPI Extension
+# PYXAID MPI Liouville-Space Extension
 
-This repository extends PYXAID with Liouville-space surface-hopping dynamics and an mpi4py-based parallel driver for large Hamiltonian datasets.
+This repository extends PYXAID with Liouville-space surface-hopping dynamics.
 
 ## Layout
 - `pyxaid-code-mpi/` – main source tree.
